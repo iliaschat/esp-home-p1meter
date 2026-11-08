@@ -1,0 +1,202 @@
+#  Shared config for all firmwares. Board hardware and wifi_led are defined in the device file;
+#  variant settings come from firmwares/<variant>/p1meter_<variant>.yaml.
+esphome:
+  name: p1-meter
+  project:
+    name: p1meter.firmware
+    version: !include ../version.txt
+
+wifi:
+  # output_power: 10dBm # Set WiFi output power to 10dBm if facing connectivity issues
+  ap:
+    ssid: "P1-Meter-Setup"
+    ap_timeout: 90s
+    manual_ip:
+      static_ip: 192.168.4.1
+      gateway: 192.168.4.1
+      subnet: 255.255.255.0
+  on_connect:
+    - light.turn_on: wifi_led
+
+mqtt:
+  id: mqtt_client
+  broker: ""
+  username: ""
+  password: ""
+  enable_on_boot: false
+  reboot_timeout: 0s
+  on_connect:
+    - then:
+        - switch.template.publish:
+            id: mqtt_switch
+            state: ON
+
+api:
+  reboot_timeout: 30min
+
+uart:
+  rx_pin:
+    number: GPIO3
+    inverted: true
+  baud_rate: 115200
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  rx_buffer_size: 2048
+
+dsmr:
+  crc_check: false
+
+sensor:
+  - platform: dsmr
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Returned Tariff 1"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Returned Tariff 2"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      unit_of_measurement: kW
+      device_class: power
+    power_returned:
+      name: "Power Returned"
+      unit_of_measurement: kW
+      device_class: power
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      unit_of_measurement: kW
+      device_class: power
+      state_class: measurement
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      unit_of_measurement: kW
+      device_class: power
+      state_class: measurement
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      unit_of_measurement: kW
+      device_class: power
+      state_class: measurement
+    current_l1:
+      name: "Current Phase 1"
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+    current_l2:
+      name: "Current Phase 2"
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+    current_l3:
+      name: "Current Phase 3"
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+    voltage_l1:
+      name: "Voltage Phase 1"
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+    voltage_l2:
+      name: "Voltage Phase 2"
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+    voltage_l3:
+      name: "Voltage Phase 3"
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+    gas_delivered:
+      name: "Gas Consumed"
+      unit_of_measurement: m³
+      device_class: gas
+      state_class: total_increasing
+    electricity_failures:
+      name: "Short Power Outages"
+      state_class: total_increasing
+    electricity_long_failures:
+      name: "Long Power Outages"
+      state_class: total_increasing
+    electricity_sags_l1:
+      name: "Short Power Drops Phase 1"
+      state_class: total_increasing
+    electricity_swells_l1:
+      name: "Short Power Peaks Phase 1"
+      state_class: total_increasing
+
+text_sensor:
+  - platform: dsmr
+    identification:
+      name: "P1 Meter ID"
+    p1_version:
+      name: "P1 Version"
+    electricity_tariff:
+      name: "Actual Tariff Group"
+
+web_server:
+  port: 80
+  version: 3
+  auth:
+    username: "p1meter"
+    type: digest
+
+p1_setup:
+  id: p1_setup_control
+  mqtt_id: mqtt_client
+  device_name: "P1 Meter"
+  login_username: "p1meter" # Must match web_server.auth.username
+
+switch:
+  - platform: template
+    name: "MQTT"
+    id: mqtt_switch
+    lambda: return id(p1_setup_control).mqtt_enabled();
+    turn_on_action:
+      - lambda: id(p1_setup_control).set_mqtt_enabled(true);
+    turn_off_action:
+      - lambda: id(p1_setup_control).set_mqtt_enabled(false);
+  - platform: restart
+    name: "Reboot"
+
+interval:
+  - interval: 250ms
+    then:
+      - if:
+          condition:
+            wifi.ap_active:
+          then:
+            - light.toggle: wifi_led
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            all:
+              - not:
+                  wifi.connected:
+              - not:
+                  wifi.ap_active:
+          then:
+            - light.toggle: wifi_led
+
+ota:
+  - platform: web_server
+
+logger:
+  level: INFO
+  baud_rate: 0

@@ -1,0 +1,19 @@
+#  Advanced firmware variant settings. Passwords come from secrets.yaml.
+external_components:
+  - source: ../../components
+    components: [p1_setup]
+
+web_server:
+  auth:
+    password: !secret p1_meter__setup_wifi_password # Setup Wi-Fi password for AP mode
+
+p1_setup:
+  login_password: !secret p1_meter__setup_wifi_password # Optional initial setup password; empty = open first-use setup
+
+api:
+  encryption:
+    key: !secret p1_meter__encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret p1meter__ota_password

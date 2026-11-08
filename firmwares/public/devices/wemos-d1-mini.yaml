@@ -1,0 +1,21 @@
+#  Public firmware for the Wemos D1 mini (ESP8266, d1_mini board). Shared config: ../../p1meter_common.yaml
+esp8266:
+  board: d1_mini
+  restore_from_flash: true
+
+output:
+  - platform: gpio
+    id: wifi_led_output
+    pin:
+      number: GPIO2
+      inverted: true
+
+light:
+  - platform: binary
+    id: wifi_led
+    output: wifi_led_output
+    internal: true
+
+packages:
+  common: !include ../../p1meter_common.yaml
+  variant: !include ../p1meter_public.yaml

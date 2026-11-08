@@ -1,0 +1,28 @@
+#  Public firmware for the ESP32-S3 (esp32-s3-devkitc-1 board). Shared config: ../../p1meter_common.yaml
+esphome:
+  libraries:
+    - "DNSServer"
+    - "FS"
+    - "Network"
+    - "AsyncUDP"
+    - "WiFi"
+    - "Hash"
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+    version: 3.3.7
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: wifi_led
+    pin: GPIO48
+    num_leds: 1
+    chipset: ws2812
+    rgb_order: grb
+    internal: true
+
+packages:
+  common: !include ../../p1meter_common.yaml
+  variant: !include ../p1meter_public.yaml

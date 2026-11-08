@@ -1,0 +1,99 @@
+{
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "firmware",
+      "type": "pickString",
+      "description": "Firmware variant",
+      "options": ["public", "advanced"],
+      "default": "public"
+    },
+    {
+      "id": "device",
+      "type": "pickString",
+      "description": "Board",
+      "options": [
+        "wemos-d1-mini",
+        "nodemcuv2",
+        "esp32-devkit",
+        "esp32-s2",
+        "esp32-s3",
+        "esp32-c3"
+      ],
+      "default": "wemos-d1-mini"
+    },
+    {
+      "id": "cleanFirmware",
+      "type": "pickString",
+      "description": "Clean: firmware",
+      "options": [
+        { "label": "All firmwares (cleans everything)", "value": "all" },
+        { "label": "Public", "value": "public" },
+        { "label": "Advanced", "value": "advanced" }
+      ],
+      "default": "all"
+    },
+    {
+      "id": "cleanScope",
+      "type": "pickString",
+      "description": "Clean: devices (ignored when All firmwares is chosen)",
+      "options": [
+        { "label": "All devices", "value": "all" },
+        { "label": "Device", "value": "device" }
+      ],
+      "default": "all"
+    },
+    {
+      "id": "cleanDevice",
+      "type": "pickString",
+      "description": "Clean: board (only used when Device is chosen)",
+      "options": [
+        { "label": "Wemos D1 Mini", "value": "wemos-d1-mini" },
+        { "label": "NodeMCU v2", "value": "nodemcuv2" },
+        { "label": "ESP32 DevKit", "value": "esp32-devkit" },
+        { "label": "ESP32-S2", "value": "esp32-s2" },
+        { "label": "ESP32-S3", "value": "esp32-s3" },
+        { "label": "ESP32-C3", "value": "esp32-c3" }
+      ],
+      "default": "wemos-d1-mini"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "P1 Meter: Compile firmware",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/build.sh", "${input:firmware}", "${input:device}", "compile"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "P1 Meter: Validate config",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/build.sh", "${input:firmware}", "${input:device}", "config"],
+      "problemMatcher": []
+    },
+    {
+      "label": "P1 Meter: Upload firmware",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/build.sh", "${input:firmware}", "${input:device}", "run"],
+      "problemMatcher": []
+    },
+    {
+      "label": "P1 Meter: Show device logs",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/build.sh", "${input:firmware}", "${input:device}", "logs"],
+      "problemMatcher": []
+    },
+    {
+      "label": "P1 Meter: Clean",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/clean.sh", "${input:cleanFirmware}", "${input:cleanScope}", "${input:cleanDevice}"],
+      "problemMatcher": []
+    }
+  ]
+}

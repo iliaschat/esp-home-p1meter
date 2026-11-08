@@ -1,0 +1,30 @@
+#  Public firmware for a generic ESP32 DevKit (esp32dev board). Shared config: ../../p1meter_common.yaml
+esphome:
+  libraries:
+    - "DNSServer"
+    - "FS"
+    - "Network"
+    - "AsyncUDP"
+    - "WiFi"
+    - "Hash"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+    version: 3.3.7
+
+output:
+  - platform: gpio
+    id: wifi_led_output
+    pin: GPIO2
+
+light:
+  - platform: binary
+    id: wifi_led
+    output: wifi_led_output
+    internal: true
+
+packages:
+  common: !include ../../p1meter_common.yaml
+  variant: !include ../p1meter_public.yaml

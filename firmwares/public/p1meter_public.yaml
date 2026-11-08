@@ -1,0 +1,11 @@
+#  Public firmware variant settings. Fixed, publicly known passwords; no secrets.yaml needed.
+external_components:
+  - source: ../../components
+    components: [p1_setup]
+
+web_server:
+  auth:
+    password: "p1meter-setup" # Must match the public setup password above
+
+p1_setup:
+  login_password: "" # Runtime setup password is set via the Web UI on first use (leave empty)
