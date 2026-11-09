@@ -277,6 +277,13 @@ void append_json_ip(String &output, const uint8_t address[4]) {
   append_json_string(output, buffer);
 }
 
+bool same_origin(AsyncWebServerRequest *request) {
+  String origin;
+  String host;
+  return request_header(request, "Origin", origin) && request_header(request, "Host", host) &&
+         origin == String("http://") + host;
+}
+
 }  // namespace
 
 bool CaptiveProbeHandler::canHandle(AsyncWebServerRequest *request) const {
@@ -298,18 +305,16 @@ void CaptiveProbeHandler::handleRequest(AsyncWebServerRequest *request) {
 }
 
 bool APSetupHandler::canHandle(AsyncWebServerRequest *request) const {
+  if (request->method() == HTTP_POST && request_url(request) == "/update")
+    return true;
   return wifi::global_wifi_component != nullptr && wifi::global_wifi_component->is_ap_active() &&
-         is_softap_client(request) &&
-         (this->setup_->canHandle(request) || (request->method() == HTTP_POST && request_url(request) == "/update"));
+         is_softap_client(request) && this->setup_->canHandle(request);
 }
 
 void APSetupHandler::handleRequest(AsyncWebServerRequest *request) {
-  if (request->method() == HTTP_POST) {
-    String origin;
-    if (!request_header(request, "Origin", origin) || origin != "http://192.168.4.1") {
-      request->send(403, "text/plain", "Invalid request origin");
-      return;
-    }
+  if (request->method() == HTTP_POST && !same_origin(request)) {
+    request->send(403, "text/plain", "Invalid request origin");
+    return;
   }
   if (request_url(request) == "/update") {
     if (!this->setup_->session_authenticated_(request)) {
@@ -337,8 +342,7 @@ void APSetupHandler::handleUpload(AsyncWebServerRequest *request, const Platform
     return;
   if (!this->setup_->session_authenticated_(request))
     return;
-  String origin;
-  if (!request_header(request, "Origin", origin) || origin != "http://192.168.4.1")
+  if (!same_origin(request))
     return;
   if (index == 0 && len > 0) {
 #ifdef USE_ESP32
