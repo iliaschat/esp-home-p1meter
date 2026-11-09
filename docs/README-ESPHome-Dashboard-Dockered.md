@@ -1,6 +1,10 @@
 # Compile and Install with the ESPHome Dashboard
 
-This guide uses the ESPHome Device Builder dashboard running in Docker. For hardware and wiring, see the [project README](../README.md). For the command-line and VS Code alternatives, see the [ESPHome CLI guide](README-ESPHome-Python-CLI.md) and [VS Code guide](README-VSCode.md).
+This guide uses the ESPHome Device Builder dashboard running in Docker.
+
+For hardware and wiring, see the [project README](../README.md).<br>
+For first setup and the web interface, see the [Software Usage Guide](README-Software-Usage-Guide.md).<br>
+For the VS Code alternative, see the [VS Code guide](README-VSCode.md).
 
 ## Contents
 
@@ -12,7 +16,6 @@ This guide uses the ESPHome Device Builder dashboard running in Docker. For hard
 - [Choose a Configuration](#choose-a-configuration)
 - [Add Your Secrets](#add-your-secrets)
 - [Set Up the Device in the Dashboard](#set-up-the-device-in-the-dashboard)
-  - [Advanced Configuration: Fetch the Component](#advanced-configuration-fetch-the-component)
 - [Validate and Compile](#validate-and-compile)
 - [First Installation over USB](#first-installation-over-usb)
 - [Later Updates and Logs](#later-updates-and-logs)
@@ -58,9 +61,8 @@ If the folder already contains configuration files, they may appear as device ca
 
 Choose **one** configuration for your meter. Open its YAML file on GitHub and copy the file contents into the Dashboard. You do not need to download the repository or component code.
 
-- [Standard configuration](../p1meter_wemosd1mini_standard.yaml): enter your Wi-Fi details in the dashboard before installing. MQTT is optional.
-- [Advanced configuration](../p1meter_wemosd1mini_advanced.yaml): connect to the meter's `P1-Meter-Setup` Wi-Fi after installation, then open `http://192.168.4.1/` in a browser to enter Wi-Fi and optional MQTT settings.
-- [Common firmware for developers](README-ESPHome-Common-Firmware-Developers.md): a variant with no secrets file and public passwords for several boards. It is less secure, and it is not set up through this dashboard; read the guide first.
+- [Dashboard Standard](../p1meter_wemosd1mini_noWebUI.yaml): enter your Wi-Fi details in the dashboard before installing. MQTT is optional.
+- [Dashboard Advanced](../p1meter_wemosd1mini_withWebUI.yaml): connect to the meter's `P1-Meter-Setup` Wi-Fi after installation, then open `http://192.168.4.1/` in a browser to enter Wi-Fi and optional MQTT settings.
 
 Both configurations name the device `p1-meter`. They are alternatives for one device, not two separate devices. If you have more than one meter, give each device a different `name` in its configuration.
 
@@ -81,13 +83,28 @@ mqtt_username: ""
 mqtt_password: ""
 ```
 
-Both configurations require `p1_meter__encryption_key` for the encrypted ESPHome native API and `p1meter__ota_password` for ESPHome OTA updates. For the **standard configuration**, replace `YOUR_WIFI_SSID` and `YOUR_WIFI_PASSWORD` with your 2.4 GHz Wi-Fi name and password. You may leave `YOUR_SETUP_WIFI_PASSWORD` unchanged because this configuration does not use it.
+<details>
+<summary><span style="font-weight:bold;color:green;">How to Generate the Encryption Key</span></summary>
 
-For the **advanced configuration**, set `YOUR_SETUP_WIFI_PASSWORD` to a password of at least eight characters. It protects the setup access point and web interface. The sign-in username is `p1meter`. You will enter your home Wi-Fi and optional MQTT settings on the device after installation.
+Replace `YOUR_P1_METER_ENCRYPTION_KEY` with your own key. Run this command in a terminal on your computer, which has OpenSSL installed (macOS and Linux include it; on Windows, use Git Bash or WSL):
+
+```bash
+openssl rand -base64 32
+```
+
+Copy the single line of output, which is 44 characters ending in `=`, and paste it between the quotation marks. Keep the key private and do not reuse the example value.
+</details><br>
+
+Both configurations require `p1_meter__encryption_key` for the encrypted ESPHome native API and `p1meter__ota_password` for ESPHome OTA updates.<br>
+For **Dashboard Standard**, replace `YOUR_WIFI_SSID` and `YOUR_WIFI_PASSWORD` with your 2.4 GHz Wi-Fi name and password.<br>
+You may leave `YOUR_SETUP_WIFI_PASSWORD` unchanged because this configuration does not use it.
+
+For **Dashboard Advanced**, set `YOUR_SETUP_WIFI_PASSWORD` to a password of at least eight characters. It protects the setup access point and web interface. The sign-in username is `p1meter`. You will enter your home Wi-Fi and optional MQTT settings on the device after installation.
 
 If you do not use MQTT, leave the three MQTT entries as shown and keep the device's MQTT switch disabled.
 
-Keep these values private. If a value contains a double quote or backslash, escape it with a backslash in the editor. Do not share screenshots containing your secrets.
+<span style="color: red;">Keep these values private.<br>
+Do not share screenshots containing your secrets.</span>
 
 ## Set Up the Device in the Dashboard
 
@@ -97,33 +114,12 @@ If the Dashboard already has a card for your configuration, click **Edit** and s
 2. On the new device's card, click **Edit**. If the editor shows individual settings instead of the configuration text, switch to the **YAML** view.
 3. Open the YAML file for your chosen configuration from [Choose a Configuration](#choose-a-configuration). On GitHub, click **Raw**, then copy and paste the entire file into the Dashboard editor.
 4. Select all the text in the editor and replace it with the copied configuration. Preserve the spaces at the beginning of each line; do not replace them with tabs.
-5. If you chose the advanced configuration, follow the next section before saving. Otherwise, click **Save** and continue to [Validate and Compile](#validate-and-compile).
-
-### Advanced Configuration: Fetch the Component
-
-The advanced configuration uses `p1_setup`. You do not need to download it. In the copied YAML, replace the `external_components` block near the top:
-
-```yaml
-external_components:
-  - source:
-      type: local
-      path: components
-```
-
-Replace just that block with the following, keeping the spaces as shown:
-
-```yaml
-external_components:
-  - source: github://iliaschat/p1meter-dsmr-esphome
-    components: [p1_setup]
-```
-
-ESPHome fetches only this component from GitHub during validation; it does not download the rest of the project. The Dashboard needs internet access. Click **Save** when finished. The standard configuration needs no external component.
+5. If you chose Dashboard Advanced, follow the next section before saving. Otherwise, click **Save** and continue to [Validate and Compile](#validate-and-compile).
 
 ## Validate and Compile
 
 1. Return to the dashboard and find the card for the configuration you chose or created. Do not install both configuration cards on the same meter.
-2. Use the card's menu and select **Validate**. Resolve any errors before proceeding, especially missing secrets or the advanced configuration's component source.
+2. Use the card's menu and select **Validate**. Resolve any errors before proceeding, especially missing secrets or Dashboard Advanced's component source.
 3. Select **Install**, then **Manual download**. The dashboard builds the firmware. Choose **Factory** for the first USB installation and download the resulting file. The first build downloads additional tools, needs internet access, and can take several minutes.
 
 ## First Installation over USB
@@ -131,14 +127,19 @@ ESPHome fetches only this component from GitHub during validation; it does not d
 1. Connect the D1 mini to the computer running your browser using a data-capable USB cable.
 2. Open [ESPHome Web](https://web.esphome.io/) in a browser that supports Web Serial, such as Chrome or Edge. Select **Connect** and choose the D1 mini's serial port.
 3. Select **Install**, choose the downloaded factory binary, and complete the installation. Do not use the OTA binary for this first USB flash.
-4. After flashing, connect the P1 interface and power the device. With the advanced firmware, complete [Advanced Firmware Setup](../README.md#advanced-firmware-setup). The standard firmware connects using the Wi-Fi credentials in `secrets.yaml`.
+4. After flashing, connect the P1 interface and power the device. With Dashboard Advanced, complete [Advanced Firmware Setup](../README.md#advanced-firmware-setup). Dashboard Standard connects using the Wi-Fi credentials in `secrets.yaml`.
 
 The browser accesses the USB device on the computer running the browser; it does not need to be attached to the Docker host or passed through to the container. If the serial port is unavailable, check the USB cable, drivers, permissions, and whether another program is using the port.
 
 ## Later Updates and Logs
 
-Once the device is connected to Wi-Fi, select **Install** on the same dashboard card and choose the wireless option to compile and upload an OTA update. The Docker host must be able to reach the device. If name resolution fails, add `use_address: <device-ip>` under the existing `wifi:` section of the selected YAML, using the device's current IP address, and retry. A router DHCP reservation can keep that address stable. Alternatively, the advanced firmware's web interface accepts the OTA binary; see [Advanced Firmware Setup](../README.md#advanced-firmware-setup).
+Once the device is connected to Wi-Fi, select **Install** on the same dashboard card and choose the wireless option to compile and upload an OTA update.
 
-The advanced firmware's web interface presents the native Digest sign-in prompt directly. After signing in, use the top-right sign-out icon to revoke the session; the page attempts to close, but some browsers may show a signed-out confirmation instead.
+<span style="color: orange;">Note: The Docker host must be able to reach the device.</span><br>
+If name resolution fails, add `use_address: <device-ip>` under the existing `wifi:` section of the selected YAML, using the device's current IP address, and retry.
+
+A router DHCP reservation can keep that address stable. Alternatively, the Dashboard Advanced web interface accepts the OTA binary; see [Advanced Firmware Setup](../README.md#advanced-firmware-setup).
+
+The Dashboard Advanced web interface presents the native Digest sign-in prompt directly. After signing in, use the top-right sign-out icon to revoke the session; the page attempts to close, but some browsers may show a signed-out confirmation instead.
 
 Use the card's **Logs** action to inspect the running device. For [Home Assistant and MQTT](../README.md#home-assistant-and-mqtt) and [troubleshooting](../README.md#troubleshooting), see the project README. Both configurations enable API encryption with `p1_meter__encryption_key` and require `p1meter__ota_password` for ESPHome OTA updates. Restrict firmware updates to a trusted network.

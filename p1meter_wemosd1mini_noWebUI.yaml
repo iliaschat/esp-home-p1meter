@@ -1,41 +1,42 @@
+# Standard firmware: no Web UI, Wi-Fi and MQTT from secrets.yaml, ESPHome API encryption and ESPHome OTA.
 esphome:
   name: p1-meter
   project:
     name: p1meter.firmware
-    version: !include version.txt
+    version: 0.1.0
+  on_boot:
+    priority: -100
+    then:
+      - if:
+          condition:
+            lambda: return id(mqtt_enabled);
+          then:
+            - mqtt.enable:
 
-external_components:
-  - source: github://iliaschat/p1meter-dsmr-esphome@release
-    components: [p1_setup]
+globals:
+  - id: mqtt_enabled
+    type: bool
+    restore_value: yes
+    initial_value: "false"
 
 esp8266:
   board: d1_mini
-  restore_from_flash: true
 
 wifi:
   # output_power: 10dBm # Set WiFi output power to 10dBm if facing connectivity issues
-  ap:
-    ssid: "P1-Meter-Setup"
-    ap_timeout: 90s
-    manual_ip:
-      static_ip: 192.168.4.1
-      gateway: 192.168.4.1
-      subnet: 255.255.255.0
+  # use_address: 192.168.1.x # enable static IP if needed
+  ssid: !secret wifi_ssid # Wi-Fi SSID
+  password: !secret wifi_password # Wi-Fi password
   on_connect:
     - switch.turn_on: wifi_led
 
 mqtt:
   id: mqtt_client
-  broker: ""
-  username: ""
-  password: ""
+  broker: !secret mqtt_broker # MQTT broker address
+  username: !secret mqtt_username # MQTT username
+  password: !secret mqtt_password # MQTT password
   enable_on_boot: false
   reboot_timeout: 0s
-  on_connect:
-    - then:
-        - switch.template.publish:
-            id: mqtt_switch
-            state: ON
 
 api:
   reboot_timeout: 30min
@@ -157,21 +158,6 @@ text_sensor:
     electricity_tariff:
       name: "Actual Tariff Group"
 
-web_server:
-  port: 80
-  version: 3
-  auth:
-    username: "p1meter"
-    password: !secret p1_meter__setup_wifi_password # Setup Wi-Fi password for AP mode
-    type: digest
-
-p1_setup:
-  id: p1_setup_control
-  mqtt_id: mqtt_client
-  device_name: "P1 Meter"
-  login_username: "p1meter" # Must match web_server.auth.username
-  login_password: !secret p1_meter__setup_wifi_password # Optional initial setup password; empty = open first-use setup
-
 switch:
   - platform: gpio
     id: wifi_led
@@ -182,38 +168,33 @@ switch:
   - platform: template
     name: "MQTT"
     id: mqtt_switch
-    lambda: return id(p1_setup_control).mqtt_enabled();
+    lambda: return id(mqtt_enabled);
     turn_on_action:
-      - lambda: id(p1_setup_control).set_mqtt_enabled(true);
+      - globals.set:
+          id: mqtt_enabled
+          value: "true"
+      - mqtt.enable:
     turn_off_action:
-      - lambda: id(p1_setup_control).set_mqtt_enabled(false);
+      - globals.set:
+          id: mqtt_enabled
+          value: "false"
+      - mqtt.disable:
   - platform: restart
     name: "Reboot"
 
 interval:
-  - interval: 250ms
-    then:
-      - if:
-          condition:
-            wifi.ap_active:
-          then:
-            - switch.toggle: wifi_led
   - interval: 1s
     then:
       - if:
           condition:
-            all:
-              - not:
-                  wifi.connected:
-              - not:
-                  wifi.ap_active:
+            not:
+              wifi.connected:
           then:
             - switch.toggle: wifi_led
 
 ota:
   - platform: esphome
     password: !secret p1meter__ota_password
-  - platform: web_server
 
 logger:
   level: INFO

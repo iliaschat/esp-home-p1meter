@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - release
+      - "release-v*"
   workflow_dispatch:
 
 permissions:
@@ -16,6 +17,7 @@ env:
 jobs:
   build:
     name: Build ${{ matrix.device }}
+    if: github.ref != 'refs/heads/release'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -29,10 +31,10 @@ jobs:
           - esp32-c3
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -40,7 +42,7 @@ jobs:
         run: pip install "esphome==${ESPHOME_VERSION}"
 
       - name: Cache ESPHome and PlatformIO downloads
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cache/esphome
@@ -73,29 +75,62 @@ jobs:
           ls -l release
 
       - name: Upload firmware artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: firmware-${{ matrix.device }}
           path: release/*.bin
           if-no-files-found: error
 
-  release:
-    name: Publish release
+  tag:
+    name: Tag build
     needs: build
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Download firmware artifacts
-        uses: actions/download-artifact@v6
-        with:
-          pattern: firmware-*
-          path: firmware
-          merge-multiple: true
+      - name: Create and push build tag
+        run: |
+          version=$(tr -d '[:space:]' < version.txt)
+          tag="${version}-build.${GITHUB_RUN_NUMBER}"
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "refs/tags/$tag"
+
+  release:
+    name: Publish release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Download artifacts from release-v build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(tr -d '[:space:]' < version.txt)
+          git fetch --force --tags origin
+          tag=$(git tag -l "${version}-build.*" --sort=-version:refname | head -n1)
+          if [ -z "$tag" ]; then
+            echo "No build tag ${version}-build.* found, build the release-v* branch first" >&2
+            exit 1
+          fi
+          sha=$(git rev-list -n1 "$tag")
+          run_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$sha&event=push" \
+            --jq '.workflow_runs[] | select(.path == ".github/workflows/release-public-firmware.yml" and .conclusion == "success") | .id' | head -n1)
+          if [ -z "$run_id" ]; then
+            echo "No successful build run found for $tag ($sha)" >&2
+            exit 1
+          fi
+          gh run download "$run_id" --pattern 'firmware-*' --dir firmware
+          find firmware -mindepth 2 -name '*.bin' -exec mv {} firmware/ \;
+          ls -l firmware
 
       - name: Read release version
         run: echo "RELEASE_VERSION=$(tr -d '[:space:]' < version.txt)" >> "$GITHUB_ENV"
