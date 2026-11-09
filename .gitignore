@@ -5,6 +5,9 @@
 /.venv/
 /secrets.yaml
 
+# VS Code
+.vscode/*
+
 # Python bytecode
 __pycache__/
 *.py[cod]

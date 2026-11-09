@@ -60,6 +60,14 @@
   ],
   "tasks": [
     {
+      "label": "Git: Skip worktree for .vscode",
+      "type": "shell",
+      "command": "git ls-files -z .vscode | xargs -0 git update-index --skip-worktree",
+      "runOptions": { "runOn": "folderOpen" },
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true },
+      "problemMatcher": []
+    },
+    {
       "label": "P1 Meter: Compile firmware",
       "type": "shell",
       "command": "bash",
