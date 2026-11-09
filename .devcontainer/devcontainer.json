@@ -7,15 +7,11 @@
     "vscode": {
       "extensions": [
         "esphome.esphome-vscode",
-        "ms-vscode.cpptools",
         "platformio.platformio-ide",
         "sanaajani.taskrunnercode"
-      ],
-      "settings": {
-        "C_Cpp.default.compileCommands": "${workspaceFolder}/firmwares/public/devices/.esphome/build/p1-meter/build/compile_commands.json"
-      }
+      ]
     }
   },
-  "postCreateCommand": "test -e secrets.yaml || cp secrets-example.yaml secrets.yaml; esphome compile firmwares/public/devices/esp32-wemos-d1-mini.yaml || echo 'ESPHome compile failed; C++ IntelliSense will be unavailable until it succeeds.'",
+  "postCreateCommand": "test -e secrets.yaml || cp secrets-example.yaml secrets.yaml; bash scripts/build.sh public wemos-d1-mini compile || echo 'ESPHome compile failed; C++ IntelliSense will be unavailable until it succeeds.'",
   "runArgs": ["--privileged", "-v", "/dev:/dev"]
 }

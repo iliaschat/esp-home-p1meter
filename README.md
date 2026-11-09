@@ -1,11 +1,13 @@
 # ESPHome P1 Meter
 
-ESPHome configuration for reading a DSMR-compatible electricity meter P1 port with a Wemos D1 mini (ESP8266). Both firmware versions expose meter readings through the ESPHome native API and provide Home Assistant switches for MQTT control and reboot.
+ESPHome configuration for reading a DSMR-compatible electricity meter P1 port with a Wemos D1 mini (ESP8266).<br>
+<span style="color:grey;">Every firmware variant exposes meter readings through the ESPHome native API and provides switches for MQTT control and reboot.</span>
 
 ## Contents
 
 - [Installation](#installation)
 	- [Useful Terms](#useful-terms)
+- [Supported Devices](#supported-devices)
 - [Hardware and Wiring](#hardware-and-wiring)
 	- [Check Your Meter First](#check-your-meter-first)
 	- [P1 Wiring](#p1-wiring)
@@ -21,11 +23,11 @@ ESPHome configuration for reading a DSMR-compatible electricity meter P1 port wi
 
 Choose a guide to configure, compile, and install the software:
 
-- [Install released firmware with ESPHome Web](docs/README-ESPHome-Common-Firmware-Users.md): the easiest option. Download the firmware for your board from the GitHub release and flash it in the browser at [web.esphome.io](https://web.esphome.io/). No software or compiling is needed. This is less secure: it does not use API encryption, so read its security warning first.
-- [ESPHome dashboard in Docker](docs/README-ESPHome-Dashboard-Dockered.md): recommended for beginners. Copy either YAML configuration into the dashboard; the advanced configuration's component is fetched automatically, so you do not need to download the project code.
-- [ESPHome Python command line](docs/README-ESPHome-Python-CLI.md): a more technical option using terminal commands.
-- [VS Code](docs/README-VSCode.md): a more technical option using a development container. It includes VS Code tasks and PlatformIO IDE support for building and uploading each firmware and board.
-- [Common firmware for developers](docs/README-ESPHome-Common-Firmware-Developers.md): how to compile the Common firmware for several boards (Wemos D1 mini, NodeMCU, ESP32, ESP32-S2/S3/C3) and how the released files are produced. This is less secure: it has no `secrets.yaml` file, public passwords, and no API encryption.
+- [Install Released Version via web.esphome.io](docs/README-Install-Released-Version.md): <strong>Non-technical people start here.</strong><br>Install the released firmware (no compiling required).
+- [ESPHome dashboard in Docker](docs/README-ESPHome-Dashboard-Dockered.md) <br>For those who prefer a browser-based ESPHome dashboard. Copy either YAML configuration into the dashboard; the advanced configuration's component is fetched automatically, so you do not need to download the project code. Use it for the Dashboard-Standard or Dashboard-Advanced configuration.
+- [VS Code](docs/README-VSCode.md): build and flash the Public and Advanced firmwares with VS Code tasks or PlatformIO IDE, using a development container.
+
+[Software Usage Guide](docs/README-Software-Usage-Guide.md): Instructions of how to use the software.
 
 ### Useful Terms
 
@@ -69,7 +71,7 @@ Connect a 10 kΩ pull-up resistor between 3.3 V and the data line (P1 pin 5 / GP
 Power the D1 mini over USB for this wiring.
 
 <details>
-<summary><strong>Show USB-powered wiring diagram</strong></summary>
+<summary><span style="cursor:pointer;font-weight:bold;color:green;">Show USB-powered wiring diagram</span></summary>
 
 ![USB-powered wiring diagram](assets/p1-wiring-usb-powered.jpeg)
 </details>
@@ -86,21 +88,56 @@ On compatible DSMR 5+ meters with a 6-contact cable, these additional connection
 Keep the connections and pull-up resistor above. Before using meter power, verify that the meter supplies 5 V and enough current for the D1 mini, including Wi-Fi peaks.
 
 <details>
-<summary><strong>Show meter-powered wiring diagram</strong></summary>
+<summary><span style="cursor:pointer;font-weight:bold;color:green;">Show meter-powered wiring diagram</span></summary>
 
 ![Meter-powered wiring diagram](assets/p1-wiring-meter-powered.jpeg)
 </details><br>
 
 Both configurations read inverted serial data on GPIO3 (`RX`) at 115200 baud, 8 data bits, no parity, and 1 stop bit. The D1 mini's UART transmit pin is not used.
 
+## Supported Devices
+
+- Wemos D1 mini (ESP8266): tested with the project; recommended
+- NodeMCU v2 (ESP8266): compiles; not tested on hardware
+- ESP32 DevKit (ESP32): compiles; not tested on hardware
+- ESP32-S2 Saola-1 (ESP32-S2): compiles; not tested on hardware
+- ESP32-S3 DevKitC-1 (ESP32-S3): compiles; not tested on hardware
+- ESP32-C3 DevKitM-1 (ESP32-C3): compiles; not tested on hardware
+
+The ESP32-C6 is not supported.
+
+<details>
+<summary><span style="font-weight:bold;color:green;">Show GPIO pin table</span></summary>
+
+| Board | Chip | Status | Light (LED) GPIO | RX GPIO | RX GPIO (Alternative) |
+| --- | --- | --- | --- | --- | --- |
+| Wemos D1 mini | ESP8266 | Tested with the project; recommended | GPIO2 | GPIO3 <br><br><span style="color:grey;">GPIO3 is the ESP8266 UART0 RX pin. The ESPHome docs list GPIO3 as UART0 RX.</span> | GPIO13 (D7) <br><br><span style="color:grey;">ESPHome docs say hardware UART0 is RX GPIO13 with TX GPIO15. An RX-only config on GPIO13 may fall back to software UART, which is less accurate at 115200. GPIO15 is a boot pin, so it should not be used as TX.</span> |
+| NodeMCU v2 | ESP8266 | Compiles; not tested on hardware | GPIO2 | GPIO3 <br><br><span style="color:grey;">GPIO3 is the ESP8266 UART0 RX pin. The ESPHome docs list GPIO3 as UART0 RX.</span> | GPIO13 (D7) <br><br><span style="color:grey;">ESPHome docs say hardware UART0 is RX GPIO13 with TX GPIO15. An RX-only config on GPIO13 may fall back to software UART, which is less accurate at 115200. GPIO15 is a boot pin, so it should not be used as TX.</span> |
+| ESP32 DevKit | ESP32 | Compiles; not tested on hardware | GPIO2 | GPIO3 <br><br><span style="color:grey;">GPIO3 is the default UART0 RX (the USB serial console). That conflicts only if logging is on.</span> | GPIO16 <br><br><span style="color:grey;">Default UART2 RX. Avoid it on modules with PSRAM (e.g. WROVER), which use GPIO16/17. Any GPIO can be routed through the matrix, so GPIO25 also works.</span> |
+| ESP32-S2 Saola-1 | ESP32-S2 | Compiles; not tested on hardware | GPIO18 (addressable LED) | GPIO3 <br><br><span style="color:grey;">Logger uses USB_CDC, so GPIO3 is free.</span> | GPIO44 <br><br><span style="color:grey;">Default UART0 RX. The logger uses USB CDC, so it is free. Any unused GPIO also works via the matrix. Avoid GPIO26–32 on PSRAM modules.</span> |
+| ESP32-S3 DevKitC-1 | ESP32-S3 | Compiles; not tested on hardware | GPIO48 (addressable LED) | GPIO3 <br><br><span style="color:grey;">Logger uses USB_SERIAL_JTAG, so GPIO3 is free. Verify the GPIO3 strapping behavior on the ESP32-S3 before relying on it.</span> | GPIO4, GPIO5, GPIO6 or GPIO7 <br><br><span style="color:grey;">Avoid GPIO43/44 on DevKitC-1 (UART bridge pins). Avoid GPIO19/20 (USB), GPIO3 (strapping), and GPIO26–37 (PSRAM/flash).</span> |
+| ESP32-C3 DevKitM-1 | ESP32-C3 | Compiles; not tested on hardware | GPIO8 (addressable LED) | GPIO3 <br><br><span style="color:grey;">Logger uses USB_SERIAL_JTAG. GPIO3 is a plain GPIO.</span> | GPIO20 <br><br><span style="color:grey;">Default UART0 RX. The logger uses USB Serial/JTAG, so it is not claimed. GPIO4, GPIO5, GPIO6, GPIO7 and GPIO10 are also free. Avoid GPIO2, GPIO8 and GPIO9 (strapping), and GPIO12–17 (internal flash on some modules; verify for your module).</span> |
+</details>
+
 ## Firmware Options
 
-`p1meter_wemosd1mini_standard.yaml` uses `p1-meter` as the node name and keeps MQTT disabled at boot. Enable it from Home Assistant with the **MQTT** switch; broker settings come from `secrets.yaml`.
+- Public <span style="color:grey;">(released version)</span>
+- Advanced <span style="color:grey;">(VSCode/PlatformIO compile)</span>
+- Dashboard-Standard <span style="color:grey;">(ESPHome Dashboard, file `p1meter_wemosd1mini_noWebUI.yaml`)</span>
+- Dashboard-Advanced <span style="color:grey;">(ESPHome Dashboard, file `p1meter_wemosd1mini_withWebUI.yaml`)</span>
 
-`p1meter_wemosd1mini_advanced.yaml` provides a setup access point and web interface for configuring Wi-Fi and MQTT on the device. Its home page has shortcuts for configuration, OTA updates, factory reset, and reboot, plus a sign-out button.
+<details>
+<summary><span style="font-weight:bold;color:green;">Show firmware variants table</span></summary>
 
-Both configurations expose the same configured DSMR sensor set through the ESPHome native API:
+| Variant | Install with | Web interface | Encrypted API | OTA updates | Use when |
+| --- | --- | --- | --- | --- | --- |
+| Public (`firmwares/public`) | ESPHome Web (Download `.bin` from `releases`), VS Code or PlatformIO | Yes (setup password on first run) | No | Web interface only | You want the quickest start on a trusted network. |
+| Advanced (`firmwares/advanced`) | VS Code or PlatformIO (using your own keys) | Yes | Yes | ESPHome API and web interface | You compile yourself with your own encryption key and OTA password. |
+| Dashboard-Standard (`p1meter_wemosd1mini_noWebUI.yaml`) | ESPHome Dashboard | No | Yes | ESPHome API | You install from the ESPHome Dashboard and can only modify Wi-Fi and MQTT via the ESPHome Dashboard. |
+| Dashboard-Advanced (`p1meter_wemosd1mini_withWebUI.yaml`) | ESPHome Dashboard | Yes | Yes | ESPHome API and web interface | You install from the Dashboard and can modify Wi-Fi and MQTT anytime via the web interface. |
+</details><br>
 
+All variants expose the following configured DSMR sensor set:
 - Imported and exported energy for tariffs 1 and 2
 - Total imported and exported power
 - Imported power, current, and voltage per phase
@@ -111,15 +148,24 @@ Both configurations expose the same configured DSMR sensor set through the ESPHo
 
 A meter only reports values supported by its telegram, so some entities may remain unavailable.
 
-Both configurations support ESPHome OTA, protected by `p1meter__ota_password` from `secrets.yaml`. The advanced firmware also supports browser-based OTA with `firmware.ota.bin` through its web interface.
+<p><span style="color: orange;">Notes:</span><br>
+<span style="color: orange;">-</span> Public variant supports OTA only through its web interface.<br>
+<span style="color: orange;">-</span> Dashboard-Standard supports ESPHome OTA only.<br>
+<span style="color: orange;">-</span> Advanced and Dashboard-Advanced variants support ESPHome OTA and browser-based OTA through the web interface. (ESPHome OTA is protected by `p1meter__ota_password` from `secrets.yaml`)</p>
 
 ## Advanced Firmware Setup
 
-The advanced firmware's `P1-Meter-Setup` Wi-Fi access point and web interface let you configure Wi-Fi and MQTT and update firmware.
+The `P1-Meter-Setup` Wi-Fi access point and web interface of the Advanced and Dashboard-Advanced variants let you configure Wi-Fi and MQTT and update firmware. <span style="color: grey;">The Public variant has the same setup network with the public password `p1meter-setup` until you change it; see the [Software Usage Guide](docs/README-Software-Usage-Guide.md#first-setup-in-the-web-interface).</span>
 
-The access point starts immediately if no Wi-Fi is saved, or after 90 seconds if the device fails to connect. Connect with `p1_meter__setup_wifi_password`, then open `http://192.168.4.1/`. If prompted by the browser, sign in with username `p1meter` and the same password.
+<span style="color: green;">The access point starts immediately if no Wi-Fi is saved, or after 90 seconds if the device fails to connect.</span>
 
-The sign-in notification does not appear reliably on every phone. While connected to `P1-Meter-Setup`, always open `http://192.168.4.1/` in a browser. The home page offers:
+Connect with `p1_meter__setup_wifi_password`, then open `http://192.168.4.1/`.<br>
+If prompted by the browser, sign in with username `p1meter` and the same password.
+
+<p style="color: orange;">The sign-in notification does not appear reliably on every phone. <br>
+While connected to `P1-Meter-Setup`, always open `http://192.168.4.1/` in a browser.</p>
+
+The home page offers:
 
 - **Configure:** Choose a nearby Wi-Fi network or enter its name and password. MQTT is optional. Choose DHCP or enter a static IP, gateway, and subnet, then save and reboot. DNS is optional. Disabling MQTT clears its saved credentials.
 - **OTA Update:** Upload ESPHome's `firmware.ota.bin`. The device reboots after the update succeeds.
@@ -128,17 +174,21 @@ The sign-in notification does not appear reliably on every phone. While connecte
 
 Use the top-right sign-out button to end the session. It tries to close the tab; if the browser blocks it, a signed-out message appears.
 
-Anyone connected to the password-protected setup AP can view saved Wi-Fi and MQTT passwords, configure, update, reboot, or reset the device. Keep its password private. The web interface uses unencrypted HTTP, so use it only on a trusted network.
+<span style="color: red;">Warning:</span><br>
+Anyone connected to the password-protected web interface can view saved Wi-Fi and MQTT passwords, configure, update, reboot, or reset the device.<br>
+Keep its password private. <span style="color:grey;">The web interface uses unencrypted HTTP, so use it only on a trusted network.</span>
 
-With the advanced firmware, the device keeps trying to reconnect to your saved Wi-Fi while the `P1-Meter-Setup` access point is on. Once it reconnects, the setup access point turns off automatically. A brief router restart or power interruption should not require you to reboot the device.
+With the Advanced and Dashboard-Advanced variants, the device keeps trying to reconnect to your saved Wi-Fi while the `P1-Meter-Setup` access point is on. Once it reconnects, the setup access point turns off automatically.<br>
 
-## Home Assistant and MQTT
+<span style="color:orange;">Note:</span>
+You can access the web interface by opening `http://<device-ip-address>` or whether mDNS supported [http://ip-meter.local](http://ip-meter.local).
+
+## Home Assistant - ESPHome API and MQTT
 
 Add or accept the discovered `p1-meter` node in Home Assistant's ESPHome integration. The native API is enabled in both configurations and has a 30-minute reboot timeout if the API client remains disconnected.
 
-Use the **MQTT** switch to enable or disable the client. The standard configuration reads broker settings from `secrets.yaml`; the advanced firmware uses the credentials saved in its web interface.
-
-Both configurations enable native API encryption with `p1_meter__encryption_key` from `secrets.yaml` and require `p1meter__ota_password` for ESPHome OTA updates. Restrict firmware updates to a trusted network.
+- You can use the **MQTT** switch to enable or disable the client
+- You can use the **Reboot** switch to reboot the device.
 
 ## Troubleshooting
 
@@ -146,7 +196,7 @@ Both configurations enable native API encryption with `p1_meter__encryption_key`
 - **Cannot flash over USB:** Try a known data cable and another USB port, confirm the serial device name and permissions, and close serial monitors or other programs using the port.
 - **Device does not join Wi-Fi:** Verify the SSID and password, 2.4 GHz Wi-Fi availability for the ESP8266, and router client isolation settings.
 - **Dashboard shows the device as offline:** Check that mDNS multicast traffic on UDP port 5353 can reach the Dashboard. On Linux, run the Dashboard with host networking as described in the [Dashboard guide](docs/README-ESPHome-Dashboard-Dockered.md#start-the-dashboard). The Dashboard and device should be on the same network; separate VLANs or subnets need an mDNS reflector and appropriate firewall rules. This allows discovery with either DHCP or a static IP, without `use_address`.
-- **No meter values:** Confirm the meter's P1 port is enabled, the interface wiring and signal levels are correct, the interface output reaches GPIO3, and the meter's telegram baud rate and format match the configuration. Check logs with `esphome logs p1meter_wemosd1mini_standard.yaml` or the advanced configuration file.
+- **No meter values:** Confirm the meter's P1 port is enabled, the interface wiring and signal levels are correct, the interface output reaches GPIO3, and the meter's telegram baud rate and format match the configuration. Check logs with `esphome logs p1meter_wemosd1mini_noWebUI.yaml` or `esphome logs p1meter_wemosd1mini_withWebUI.yaml`.
 - **MQTT does not connect:** Verify that MQTT is enabled, then check broker address, port/reachability, username, password, and broker logs.
 - **OTA cannot find the node:** Check that the computer and device can communicate on the LAN, then specify its current IP or hostname. For the standard configuration, `wifi.use_address` can also be set. Use USB flashing if network connectivity has not been established.
 

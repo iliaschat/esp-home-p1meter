@@ -37,6 +37,15 @@ if [[ "$device" == all ]]; then
   targets=("${all_devices[@]}")
 fi
 
+link_secrets() {
+  local devices_dir="$1"
+  local link="$devices_dir/secrets.yaml"
+  # ESPHome resolves !secret in included files from the device directory, not the project root.
+  if [[ -f "$root/secrets.yaml" && ( ! -e "$link" || -L "$link" ) ]]; then
+    ln -sfn ../../../secrets.yaml "$link"
+  fi
+}
+
 cd "$root"
 for fw in "${firmwares[@]}"; do
   for dev in "${targets[@]}"; do
@@ -45,6 +54,7 @@ for fw in "${firmwares[@]}"; do
       echo "No such configuration: $file" >&2
       exit 1
     fi
+    link_secrets "$root/firmwares/$fw/devices"
     esphome "$action" "$file"
   done
 done
