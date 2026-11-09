@@ -1,4 +1,7 @@
 #  Advanced firmware variant settings. Passwords come from secrets.yaml.
+substitutions:
+  firmware_type: Advanced
+
 external_components:
   - source: ../../components
     components: [p1_setup]

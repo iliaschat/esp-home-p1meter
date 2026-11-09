@@ -128,7 +128,13 @@ jobs:
             echo "No successful build run found for $tag ($sha)" >&2
             exit 1
           fi
-          gh run download "$run_id" --pattern 'firmware-*' --dir firmware
+          for attempt in 1 2 3; do
+            gh run download "$run_id" --pattern 'firmware-*' --dir firmware && break
+            echo "Attempt $attempt failed, retrying..." >&2
+            [ "$attempt" -lt 3 ] || exit 1
+            rm -rf firmware
+            sleep $((attempt * 300))
+          done
           find firmware -mindepth 2 -name '*.bin' -exec mv {} firmware/ \;
           ls -l firmware
 
