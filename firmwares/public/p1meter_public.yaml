@@ -1,4 +1,7 @@
 #  Public firmware variant settings. Fixed, publicly known passwords; no secrets.yaml needed.
+substitutions:
+  firmware_type: Public
+
 external_components:
   - source: ../../components
     components: [p1_setup]

@@ -1,10 +1,13 @@
 #  Shared config for all firmwares. Board hardware and wifi_led are defined in the device file;
 #  variant settings come from firmwares/<variant>/p1meter_<variant>.yaml.
+substitutions:
+  firmware_version: !include ../version.txt
+
 esphome:
   name: p1-meter
   project:
     name: p1meter.firmware
-    version: !include ../version.txt
+    version: "${firmware_version} (${firmware_type})"
 
 wifi:
   # output_power: 10dBm # Set WiFi output power to 10dBm if facing connectivity issues
