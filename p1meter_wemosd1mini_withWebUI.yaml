@@ -2,7 +2,7 @@ esphome:
   name: p1-meter
   project:
     name: p1meter.firmware
-    version: 0.1.0
+    version: 0.2.0 (Public)
 
 # Advanced firmware: Web UI setup, ESPHome API encryption, ESPHome and Web UI OTA.
 external_components:
@@ -158,6 +158,9 @@ text_sensor:
       name: "P1 Version"
     electricity_tariff:
       name: "Actual Tariff Group"
+  - platform: template
+    name: "Firmware Version"
+    lambda: return std::string("0.2.0 (Public)");
 
 web_server:
   port: 80

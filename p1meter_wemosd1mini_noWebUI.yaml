@@ -3,7 +3,7 @@ esphome:
   name: p1-meter
   project:
     name: p1meter.firmware
-    version: 0.1.0
+    version: 0.2.0 (Standard)
   on_boot:
     priority: -100
     then:
@@ -157,6 +157,9 @@ text_sensor:
       name: "P1 Version"
     electricity_tariff:
       name: "Actual Tariff Group"
+  - platform: template
+    name: "Firmware Version"
+    lambda: return std::string("0.2.0 (Standard)");
 
 switch:
   - platform: gpio
