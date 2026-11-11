@@ -18,22 +18,21 @@ For the ESPHome Dashboard, see the [Dashboard guide](README-ESPHome-Dashboard-Do
 
 1. Connect the P1 interface and power the device.
 2. Connect to the `P1-Meter-Setup` Wi-Fi network from your phone or computer.
-   - Public: the network is open until you set a setup password in step 4.
+   - Public: the network is open until you set a setup password in step 3.
    - Advanced: use the password from `p1_meter__setup_wifi_password`.
 3. Open `http://192.168.4.1/` in a browser. Sign in with username `p1meter`.
-   - Public: use the password `p1meter-setup`, or the password you set in step 4.
-   - Advanced: use the password from `p1_meter__setup_wifi_password`.
-4. Public only: open **Configure** and select **Change setup password**. Enter 8 to 63 printable characters. The device restarts, so reconnect to `P1-Meter-Setup` with the new password.
-5. Open **Configure**, then:
+   - Public: the **Password Setup** page opens Enter 8 to 63 printable characters. The device restarts, so reconnect to `P1-Meter-Setup` with the new password. Use username `p1meter` and the password you set.
+   - Advanced: use username `p1meter` and the password from `p1_meter__setup_wifi_password`.
+4. Open **Configure**, then:
    - Select a nearby Wi-Fi network, or enter its name, and enter its password.
    - Optionally enable MQTT and enter the broker host, port (default `1883`), username, and password.
    - Choose DHCP, or enter a static IP address, gateway, and subnet mask. DNS is optional.
    - Select **Save and reboot**.
-6. The device joins your Wi-Fi and the `P1-Meter-Setup` network turns off. Find the device's IP address in your router, then open it in a browser on your home network.
+6. The device joins your Wi-Fi and the `P1-Meter-Setup` network turns off. Use `http://p1-meter.local` or find the device's IP address in your router, then open it in a browser on your home network to access the web interface in the future.
 
-The setup network starts immediately if no Wi-Fi is saved. It also starts if the device cannot connect for 90 seconds. It turns off automatically once the device reconnects to your Wi-Fi.
-
-The sign-in prompt does not appear reliably on every phone. If it does not appear, use a browser on a computer or open the page in a desktop browser.
+Additional information:
+- The setup network starts immediately if no Wi-Fi is saved. It also starts if the device cannot connect for 90 seconds. It turns off automatically once the device reconnects to your Wi-Fi.
+- The sign-in prompt does not appear reliably on every device. If it does not appear, use a browser on a computer or open the page in a desktop browser.
 
 ## Web Interface Reference
 
@@ -48,17 +47,26 @@ The home page links to these pages. Use the sign-out icon in the top-right corne
 | Factory Reset | `/factory-reset` | Erases saved Wi-Fi, MQTT, and network settings, then restarts in setup mode. |
 | Reboot | `/reboot` | Restarts the device. |
 
-## Updates and Logs
-
-- **Wireless update:** open **OTA Update** and upload the `<board>-firmware.ota.bin` file. For boards that publish only `<board>-firmware.bin`, upload that file. Released files are published on the GitHub release page.
+## Updates
+- **Update from Web interface:** to install a later version, download the newer file from the releases page. Open the `http://p1-meter.local` or the device's IP address in a browser on your home network, sign in, click **OTA Update**, and select the file. Keep the power connected until the device restarts.<br>
+Upload the `<board>-firmware.ota.bin` file. For boards that publish only `<board>-firmware.bin`, upload that file.
+- **Update from ESPHome Dashboard:** click install on your configuration, choose **On the network** from the pop-up window.
 - **Update from VS Code:** once the device is on your network, use **P1 Meter: Upload firmware** from the VS Code tasks.
-- **Logs:** use **P1 Meter: Show device logs** in VS Code. The Dashboard variants can also show logs with the Dashboard's **Logs** action.
-- **Status LED:** the LED on GPIO2 stays on while Wi-Fi is connected. The Standard firmware blinks it once per second while disconnected. The Advanced firmware blinks it every 250 ms while its setup network is active.
+
+## Logs
+
+- **In ESPHome Dashboard:** Use **Logs** action.
+- **In VS Code:** use **P1 Meter: Show device logs** from the Tasks/PlatformIO.
 
 ## Troubleshooting
 
+- **Status LED:** the device's LED has three states:<br>
+Blinks every 250 ms while its setup network (`P1-Meter-Setup`) is active.<br>
+Blinks once per second while disconnected.<br>
+Stays on while Wi-Fi is connected.
 - **Cannot open `http://192.168.4.1/`:** make sure your device is connected to `P1-Meter-Setup`, and try a browser on a computer.
 - **Device does not join Wi-Fi:** check the SSID and password, and confirm the router offers 2.4 GHz Wi-Fi. The ESP8266 does not support 5 GHz.
+- **Cannot browse to `http://p1-meter.local`:** Make sure that the device is connected to your local network and find the device's IP address in your router, then open it in a browser on your home network to access the web interface in the future.
 - **No meter values:** confirm the P1 port is enabled and the wiring matches the [project README](../README.md#p1-wiring).
 - **MQTT does not connect:** check the broker address, port, username, and password, then review the broker logs.
 

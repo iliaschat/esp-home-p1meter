@@ -33,23 +33,11 @@ You need:
 
 ## Step 4: Set Up Wi-Fi
 
-1. Connect the Wemos D1 mini to the P1 port of your meter, and power it on.
-2. On your phone or computer, open the Wi-Fi settings and connect to the network named `P1-Meter-Setup`. The network has no password the first time.
-3. Open a web browser and go to `http://192.168.4.1/`.
-4. Sign in with:
-   - Username: `p1meter`
-   - Password: `p1meter-setup`
-5. Click **Change setup password** and choose a new password of 8 to 63 characters. Write it down. The device restarts.
-6. Reconnect to `P1-Meter-Setup` using your new password, then open `http://192.168.4.1/` again and sign in.
-7. Click **Configure**.
-   - Select your home Wi-Fi network and enter its password.
-   - MQTT is optional. Leave it off if you do not use it.
-   - Click **Save and reboot**.
-8. The device joins your home Wi-Fi, and the `P1-Meter-Setup` network turns off. The setup is complete.
+See the [Software Usage Guide](README-Software-Usage-Guide.md).
 
 ## Updates
 
-To install a later version, download the newer file from the releases page. Open the device's IP address in a browser on your home network, sign in, click **OTA Update**, and select the file. Keep the power connected until the device restarts.
+See the [Software Usage Guide](README-Software-Usage-Guide.md).
 
 ## Security
 
