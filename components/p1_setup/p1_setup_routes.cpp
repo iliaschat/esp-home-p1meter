@@ -1,4 +1,6 @@
 #include "p1_setup_internal.h"
+#include "esphome/components/sensor/sensor.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 
 namespace esphome::p1_setup {
 
@@ -25,8 +27,8 @@ void P1Setup::send_html_(AsyncWebServerRequest *request, const String &page) {
 bool P1Setup::canHandle(AsyncWebServerRequest *request) const {
   const String url = request_url(request);
   if (request->method() == HTTP_GET) {
-      return url == "/" || url == "/configure" || url == "/ota" || url == "/factory-reset" || url == "/reboot" ||
-        url == "/setup-password" || url == "/api/settings" || url == "/api/scan";
+      return url == "/" || url == "/dashboard" || url == "/configure" || url == "/ota" || url == "/factory-reset" || url == "/reboot" ||
+        url == "/setup-password" || url == "/api/dashboard" || url == "/api/settings" || url == "/api/scan";
   }
   return request->method() == HTTP_POST &&
       (url == "/api/settings" || url == "/api/factory-reset" || url == "/api/reboot" || url == "/api/logout" ||
@@ -56,6 +58,11 @@ void P1Setup::handleRequest(AsyncWebServerRequest *request) {
     if (url == "/") {
       String page = web_pages::render(web_pages::INDEX_PAGE, this->device_name_.c_str());
       this->send_html_(request, page);
+    } else if (url == "/dashboard") {
+      String page = web_pages::render(web_pages::DASHBOARD_PAGE, this->device_name_.c_str());
+      this->send_html_(request, page);
+    } else if (url == "/api/dashboard") {
+      this->send_dashboard_data_(request);
     } else if (url == "/configure") {
       this->send_configure_page_(request);
     } else if (url == "/ota") {
@@ -93,6 +100,47 @@ void P1Setup::handleRequest(AsyncWebServerRequest *request) {
     request->send(200, "text/plain", "Factory reset complete; rebooting");
     this->schedule_reboot_();
   }
+}
+
+void P1Setup::send_dashboard_data_(AsyncWebServerRequest *request) {
+  String json;
+  json.reserve(4096);
+  json += F("{\"sensors\":[");
+  bool first = true;
+  for (auto *sensor : App.get_sensors()) {
+    if (sensor == nullptr || sensor->is_internal())
+      continue;
+    if (!first)
+      json += ',';
+    first = false;
+    json += F("{\"name\":");
+    append_json_string(json, sensor->get_name().c_str());
+    json += F(",\"has_state\":");
+    json += sensor->has_state() ? F("true") : F("false");
+    if (sensor->has_state()) {
+      json += F(",\"value\":");
+      json += String(sensor->get_state(), 6);
+    }
+    json += '}';
+  }
+  json += F("],\"text_sensors\":[");
+  first = true;
+  for (auto *sensor : App.get_text_sensors()) {
+    if (sensor == nullptr || sensor->is_internal())
+      continue;
+    if (!first)
+      json += ',';
+    first = false;
+    json += F("{\"name\":");
+    append_json_string(json, sensor->get_name().c_str());
+    json += F(",\"state\":");
+    append_json_string(json, sensor->get_state().c_str());
+    json += '}';
+  }
+  json += F("]}");
+  AsyncWebServerResponse *response = begin_text_response(request, 200, "application/json", json);
+  response->addHeader("Cache-Control", "no-store");
+  request->send(response);
 }
 
 void P1Setup::send_configure_page_(AsyncWebServerRequest *request) {

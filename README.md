@@ -73,7 +73,7 @@ Power the D1 mini over USB for this wiring.
 <details>
 <summary><span style="cursor:pointer;font-weight:bold;color:green;">Show USB-powered wiring diagram</span></summary>
 
-![USB-powered wiring diagram](assets/p1-wiring-usb-powered.jpeg)
+![USB-powered wiring diagram](docs/images/p1-wiring-usb-powered.jpeg)
 </details>
 
 ### Optional Meter Power
@@ -90,7 +90,7 @@ Keep the connections and pull-up resistor above. Before using meter power, verif
 <details>
 <summary><span style="cursor:pointer;font-weight:bold;color:green;">Show meter-powered wiring diagram</span></summary>
 
-![Meter-powered wiring diagram](assets/p1-wiring-meter-powered.jpeg)
+![Meter-powered wiring diagram](docs/images/p1-wiring-meter-powered.jpeg)
 </details><br>
 
 Both configurations read inverted serial data on GPIO3 (`RX`) at 115200 baud, 8 data bits, no parity, and 1 stop bit. The D1 mini's UART transmit pin is not used.
