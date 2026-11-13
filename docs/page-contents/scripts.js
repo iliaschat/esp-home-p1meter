@@ -1,3 +1,17 @@
+
+/**
+ * Works-with logo carousel – duplicate items for seamless infinite scroll
+ */
+(function () {
+  "use strict";
+  const worksTrack = document.getElementById("worksTrack");
+  if (!worksTrack) return;
+  const items = Array.from(worksTrack.children);
+  items.forEach((item) => {
+    worksTrack.appendChild(item.cloneNode(true));
+  });
+})();
+
 /**
  * P1 Meter DSMR – Custom scripts
  * - Infinite horizontal gallery
