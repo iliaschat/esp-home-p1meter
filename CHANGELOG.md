@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+### Web interface
+- Added Live Meter Dashboard page
+Live readings displayed in this Dashboard:
+  - **Power now:** Current power consumed and returned (Watts)
+  - **Energy totals:** Energy consumed/returned per tariff and gas consumption (kWh, m³)
+  - **Phase readings:** Power, current, and voltage per phase (kW, A, V)
+  - **Meter information:** P1 Meter ID, P1 Version, and active tariff group
+  - **Power quality:** Short and long power outages, and voltage drops/peaks on phase 1
+
 ## 0.2.0
 
 - Removed the footer text from the setup home page.
