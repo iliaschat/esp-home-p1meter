@@ -3,7 +3,7 @@ esphome:
   name: p1-meter
   project:
     name: p1meter.firmware
-    version: 0.2.0 (Standard)
+    version: 0.3.1 (Standard)
   on_boot:
     priority: -100
     then:
@@ -12,6 +12,10 @@ esphome:
             lambda: return id(mqtt_enabled);
           then:
             - mqtt.enable:
+
+external_components:
+  - source: ./components
+    components: [dsmr]
 
 globals:
   - id: mqtt_enabled
@@ -159,7 +163,7 @@ text_sensor:
       name: "Actual Tariff Group"
   - platform: template
     name: "Firmware Version"
-    lambda: return std::string("0.2.0 (Standard)");
+    lambda: return std::string("0.3.1 (Standard)");
 
 switch:
   - platform: gpio

@@ -2,12 +2,12 @@ esphome:
   name: p1-meter
   project:
     name: p1meter.firmware
-    version: 0.2.0 (Public)
+    version: 0.3.1 (Public)
 
 # Advanced firmware: Web UI setup, ESPHome API encryption, ESPHome and Web UI OTA.
 external_components:
   - source: github://iliaschat/p1meter-dsmr-esphome@release
-    components: [p1_setup]
+    components: [p1_setup, dsmr]
 
 esp8266:
   board: d1_mini
@@ -55,6 +55,7 @@ uart:
   rx_buffer_size: 2048
 
 dsmr:
+  id: dsmr_id
   crc_check: false
 
 sensor:
@@ -160,7 +161,7 @@ text_sensor:
       name: "Actual Tariff Group"
   - platform: template
     name: "Firmware Version"
-    lambda: return std::string("0.2.0 (Public)");
+    lambda: return std::string("0.3.1 (Public)");
 
 web_server:
   port: 80
