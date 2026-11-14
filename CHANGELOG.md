@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+### Meter compatibility
+- The firmware automatically detects whether the gas meter reports on M-Bus 1 or M-Bus 2 and remembers the selection after restart.
+- Added support for encrypted DSMR telegrams when a decryption key is configured.
+
 ## 0.3.0
 
 ### Web interface

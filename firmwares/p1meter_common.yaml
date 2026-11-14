@@ -48,6 +48,7 @@ uart:
   rx_buffer_size: 2048
 
 dsmr:
+  id: dsmr_id
   crc_check: false
 
 sensor:
