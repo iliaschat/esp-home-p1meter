@@ -4,7 +4,7 @@ substitutions:
 
 external_components:
   - source: ../../components
-    components: [p1_setup]
+    components: [p1_setup, dsmr]
 
 web_server:
   auth:
