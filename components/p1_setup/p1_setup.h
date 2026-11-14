@@ -59,6 +59,20 @@ struct SetupSettings {
   uint8_t dns[4];
 };
 
+struct HistoryBucket {
+  uint32_t hour_key;
+  float power_consumed_sum;
+  float power_returned_sum;
+  float gas_consumed_sum;
+  uint16_t sample_count;
+  uint8_t valid;
+};
+
+struct HistorySettings {
+  uint32_t magic;
+  HistoryBucket buckets[72];
+};
+
 class P1Setup final : public Component, public AsyncWebHandler {
  public:
   void set_mqtt_client(mqtt::MQTTClientComponent *client) { this->mqtt_client_ = client; }
@@ -98,6 +112,9 @@ class P1Setup final : public Component, public AsyncWebHandler {
   void handle_logout_(AsyncWebServerRequest *request);
   void send_html_(AsyncWebServerRequest *request, const String &page);
   void send_dashboard_data_(AsyncWebServerRequest *request);
+  void update_history_();
+  void save_history_();
+  void append_history_json_(String &json, uint8_t day_offset) const;
   void send_configure_page_(AsyncWebServerRequest *request);
   void send_settings_(AsyncWebServerRequest *request);
   void send_scan_(AsyncWebServerRequest *request);
@@ -115,7 +132,9 @@ class P1Setup final : public Component, public AsyncWebHandler {
   ESPPreferenceObject settings_preference_;
   ESPPreferenceObject mqtt_enabled_preference_;
   ESPPreferenceObject setup_password_preference_;
+  ESPPreferenceObject history_preference_;
   SetupSettings settings_{};
+  HistorySettings history_{};
   CaptiveProbeHandler captive_probe_;
   APSetupHandler ap_setup_{this};
   DNSServer dns_server_;
@@ -123,6 +142,7 @@ class P1Setup final : public Component, public AsyncWebHandler {
   bool mqtt_enabled_{false};
   bool scan_active_{false};
   bool dns_active_{false};
+  uint32_t last_history_sample_{0};
 };
 
 }  // namespace esphome::p1_setup

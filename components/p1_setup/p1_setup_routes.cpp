@@ -104,7 +104,7 @@ void P1Setup::handleRequest(AsyncWebServerRequest *request) {
 
 void P1Setup::send_dashboard_data_(AsyncWebServerRequest *request) {
   String json;
-  json.reserve(4096);
+  json.reserve(7000);
   json += F("{\"sensors\":[");
   bool first = true;
   for (auto *sensor : App.get_sensors()) {
@@ -137,7 +137,14 @@ void P1Setup::send_dashboard_data_(AsyncWebServerRequest *request) {
     append_json_string(json, sensor->get_state().c_str());
     json += '}';
   }
-  json += F("]}");
+  json += ']';
+  int requested_day = request_arg(request, "day").toInt();
+  if (requested_day < 0)
+    requested_day = 0;
+  if (requested_day > 2)
+    requested_day = 2;
+  this->append_history_json_(json, static_cast<uint8_t>(requested_day));
+  json += F("}");
   AsyncWebServerResponse *response = begin_text_response(request, 200, "application/json", json);
   response->addHeader("Cache-Control", "no-store");
   request->send(response);

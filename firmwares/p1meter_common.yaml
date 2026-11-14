@@ -146,6 +146,9 @@ sensor:
 
 text_sensor:
   - platform: dsmr
+    timestamp:
+      name: "DSMR Timestamp"
+      internal: true
     identification:
       name: "P1 Meter ID"
     p1_version:

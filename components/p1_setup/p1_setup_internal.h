@@ -23,6 +23,8 @@ inline constexpr uint32_t SETTINGS_PREFERENCE_KEY = 0x50315331;
 inline constexpr uint32_t MQTT_ENABLED_PREFERENCE_KEY = 0x50314D45;
 inline constexpr uint32_t SETUP_PASSWORD_MAGIC = 0x50315350;
 inline constexpr uint32_t SETUP_PASSWORD_PREFERENCE_KEY = 0x50315350;
+inline constexpr uint32_t HISTORY_MAGIC = 0x50314831;
+inline constexpr uint32_t HISTORY_PREFERENCE_KEY = 0x50314831;
 inline constexpr uint32_t SESSION_TIMEOUT_MS = 30UL * 60UL * 1000UL;
 inline constexpr size_t SESSION_TOKEN_LENGTH = 32;
 

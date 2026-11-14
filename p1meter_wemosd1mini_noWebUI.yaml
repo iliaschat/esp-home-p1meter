@@ -1,4 +1,8 @@
 # Standard firmware: no Web UI, Wi-Fi and MQTT from secrets.yaml, ESPHome API encryption and ESPHome OTA.
+external_components:
+  - source: ./components
+    components: [dsmr]
+
 esphome:
   name: p1-meter
   project:
@@ -155,6 +159,9 @@ sensor:
 
 text_sensor:
   - platform: dsmr
+    timestamp:
+      name: "DSMR Timestamp"
+      internal: true
     identification:
       name: "P1 Meter ID"
     p1_version:
